@@ -1,0 +1,28 @@
+# Apache / LiteSpeed (cPanel). Review and merge existing rules before deployment.
+Options -Indexes -MultiViews
+DirectoryIndex index.html
+ErrorDocument 404 /404.html
+<IfModule mod_rewrite.c>
+RewriteEngine On
+# Keep the canonical host already used by the existing live site.
+RewriteCond %{HTTPS} !=on [OR]
+RewriteCond %{HTTP_HOST} !^www\.sanliotokurtarma\.com$ [NC]
+RewriteRule ^ https://www.sanliotokurtarma.com%{REQUEST_URI} [R=301,L]
+# Redirect explicit index.html URLs, not internal DirectoryIndex lookups.
+RewriteCond %{THE_REQUEST} \s/+(.*/)?index\.html(?:[?\s]) [NC]
+RewriteRule ^(.*)index\.html$ /$1 [R=301,L]
+</IfModule>
+<IfModule mod_mime.c>
+AddType image/webp .webp
+AddType font/woff2 .woff2
+AddCharset UTF-8 .html .css .js .xml .txt
+</IfModule>
+<IfModule mod_headers.c>
+<FilesMatch "\.(html|xml|txt)$">
+Header set Cache-Control "public, max-age=0, must-revalidate"
+</FilesMatch>
+<FilesMatch "\.(webp|woff2)$">
+Header set Cache-Control "public, max-age=604800"
+</FilesMatch>
+Header set X-Content-Type-Options "nosniff"
+</IfModule>
